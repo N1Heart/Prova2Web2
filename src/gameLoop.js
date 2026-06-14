@@ -27,7 +27,9 @@ function resetMatch(gameState) {
     gameState.bullets = []; // Limpa os tiros voando
     
     // Passa para o próximo mapa da lista
-    gameState.currentMapIndex = (gameState.currentMapIndex + 1) % maps.length;
+    if (gameState.nextMapIndex !== undefined) {
+        gameState.currentMapIndex = gameState.nextMapIndex;
+    }
     const currentMap = maps[gameState.currentMapIndex];
 
     // Renasce todos os jogadores no novo mapa
@@ -85,6 +87,11 @@ function updateGame(gameState, dt) {
         gameState.isEnded = true;
         gameState.endTimer = 5; // Define 5 segundos apenas UMA vez
         
+        let nextMap;
+        do {
+            nextMap = Math.floor(Math.random() * maps.length);
+        } while (nextMap === gameState.currentMapIndex && maps.length > 1);
+        gameState.nextMapIndex = nextMap;
         // Calcula quem fez mais pontos para definir o vencedor
         const scoreRed = gameState.scores[0];
         const scoreBlue = gameState.scores[1];

@@ -136,6 +136,7 @@ setInterval(() => {
         broadcast({
             type: 'state',
             mapIndex: gameState.currentMapIndex,
+            nextMapIndex: gameState.nextMapIndex,
             players: gameState.players,
             bullets: gameState.bullets,
             scores: gameState.scores,
