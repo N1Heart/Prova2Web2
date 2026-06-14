@@ -6,13 +6,10 @@
 }
 
 body {
-    background-color: #1a1a2e; /* Fundo escuro geral */
-    color: #ffffff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    margin: 0;
     overflow: hidden;
+    background-color: #0a0f1e; /* Um fundo escuro para preencher as bordas que sobrarem */
+    touch-action: none; 
 }
 
 #login-screen {
@@ -55,7 +52,59 @@ body {
 }
 
 #game-canvas {
-    background-color: #1a1a2e;
-    border: 4px solid #0f3460;
-    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    max-width: 100vw;   /* Nunca fica mais largo que a tela */
+    max-height: 100vh;  /* Nunca fica mais alto que a tela */
+    width: auto;
+    height: auto;
+    object-fit: contain; /* Força a manter a proporção 4:3 original */
+    display: block;
+    margin: 0 auto;      /* Centraliza horizontalmente */
+    touch-action: none;  /* Impede que arrastar o dedo no jogo mova a tela do navegador */
+}
+
+/* --- ESTILOS DA UI MOBILE --- */
+#mobile-ui {
+    display: none; /* Escondido no PC */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none; /* Deixa o toque passar pelo container e ir pro canvas */
+    z-index: 100;
+}
+
+/* Só mostra os controles se a tela for pequena (celulares) */
+@media (max-width: 850px) {
+    #mobile-ui {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+}
+
+#dpad-left, #dpad-right {
+    display: flex;
+    gap: 15px;
+    pointer-events: auto; /* Reativa o toque apenas em cima dos botões */
+}
+
+/* Estilo dos botões transparentes */
+#mobile-ui button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 24px;
+    touch-action: none; /* Impede o navegador de dar zoom duplo ou rolar a tela */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#mobile-ui button:active {
+    background-color: rgba(255, 255, 255, 0.5);
 }

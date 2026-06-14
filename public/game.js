@@ -82,6 +82,14 @@ const input = { left: false, right: false, jump: false, down: false, shoot: fals
 // --- CONEXÃO E WEBSOCKET ---
 joinBtn.addEventListener('click', () => {
     const playerName = nameInput.value.trim() || 'Jogador';
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().then(() => {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(err => console.log("Rotação não suportada nativamente.", err));
+            }
+        }).catch(err => console.log("Fullscreen bloqueado.", err));
+    }
     
     bgm.play().catch(error => {
         console.log("Erro ao tentar tocar a música:", error);
@@ -220,6 +228,69 @@ function sendInput() {
         ws.send(JSON.stringify({ type: 'input', ...input }));
     }
 }
+// --- CONTROLES MOBILE (TOUCH) ---
+
+// 1. Mapear os botões virtuais
+const btnLeft = document.getElementById('btn-left');
+const btnRight = document.getElementById('btn-right');
+const btnJump = document.getElementById('btn-jump');
+const btnDown = document.getElementById('btn-down');
+
+// Função auxiliar para aplicar eventos sem duplicar código
+function bindTouch(element, inputKey) {
+    if(!element) return;
+    
+    element.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Impede scroll
+        e.stopPropagation(); // Impede que o toque vaze para o Canvas (tiro)
+        input[inputKey] = true;
+        
+        // Se for o pulo, toca o som igual no PC!
+        if (inputKey === 'jump') {
+            jumpSound.currentTime = 0; 
+            jumpSound.play().catch(() => {});
+        }
+    }, { passive: false });
+
+    element.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        input[inputKey] = false;
+    }, { passive: false });
+}
+
+bindTouch(btnLeft, 'left');
+bindTouch(btnRight, 'right');
+bindTouch(btnJump, 'jump');
+bindTouch(btnDown, 'down');
+
+// 2. Tiro ao tocar no Canvas
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // Evita dar zoom
+    const touch = e.changedTouches[0]; // Pega o primeiro dedo que tocou na tela
+    const rect = canvas.getBoundingClientRect();
+    
+    // Descobre a coordenada X e Y exata daquele ponto no celular
+    // multiplicando pela escala (canvas.width / rect.width) para alinhar perfeitamente
+    mouseX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+    mouseY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+    
+    input.shoot = true;
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const touch = e.changedTouches[0];
+    const rect = canvas.getBoundingClientRect();
+    
+    mouseX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+    mouseY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+}, { passive: false });
+
+canvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    input.shoot = false;
+}, { passive: false });
 
 // --- LOOP DE RENDERIZAÇÃO ---
 function render() {
