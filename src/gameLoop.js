@@ -47,7 +47,6 @@ function resetMatch(gameState) {
 }
 
 // Atualiza o estado do jogo inteiro a cada tick
-// Atualiza o estado do jogo inteiro a cada tick
 function updateGame(gameState, dt) {
 
     const playerCount = Object.keys(gameState.players).length;

@@ -94,25 +94,20 @@ joinBtn.addEventListener('click', () => {
     bgm.play().catch(error => {
         console.log("Erro ao tentar tocar a música:", error);
     });
-    // Conecta ao servidor WebSocket
-   // Conecta ao servidor WebSocket (Ajusta automaticamente para WSS se estiver em HTTPS)
     const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     ws = new WebSocket(`${wsProtocol}${window.location.host}`);
 
     ws.onopen = () => {
-        // Esconde login e mostra o jogo
         loginScreen.style.display = 'none';
         canvas.style.display = 'block';
 
         bgm.play().catch(error => {
             console.log("Navegador bloqueou o áudio inicialmente:", error);
         });
-        // Envia pedido para entrar
         ws.send(JSON.stringify({ type: 'join', name: playerName }));
         
-        // Inicia o loop de renderização e de envio de input
         requestAnimationFrame(render);
-        setInterval(sendInput, 1000 / 60); // Envia input a ~60Hz
+        setInterval(sendInput, 1000 / 60); 
     };
 
     ws.onmessage = (event) => {
@@ -124,26 +119,22 @@ joinBtn.addEventListener('click', () => {
         }
 
         if (data.type === 'state') {
-            lastState = data; // Salva o estado mais recente recebido do servidor
+            lastState = data; 
             currentMapIndex = data.mapIndex;
 
             if (data.bullets) {
                 for (const b of data.bullets) {
-                    // Se o servidor mandou uma bala com ID que o cliente ainda não conhece...
                     if (!audioBulletsTracked.has(b.id)) {
                         
-                        // Técnica cloneNode(): Permite tocar múltiplos tiros idênticos
-                        // sobrepostos sem cortar o som do tiro anterior que ainda está tocando
+                       
                         const shotClone = shootSound.cloneNode();
                         shotClone.volume = shootSound.volume;
                         shotClone.play().catch(() => {});
 
-                        // Registra que essa bala já fez barulho
                         audioBulletsTracked.add(b.id);
                     }
                 }
 
-                // Limpeza: Remove do Set as balas antigas que já sumiram do servidor
                 const serverBulletIds = new Set(data.bullets.map(b => b.id));
                 for (const id of audioBulletsTracked) {
                     if (!serverBulletIds.has(id)) {
@@ -219,10 +210,8 @@ canvas.addEventListener('mousemove', (e) => {
     mouseY = e.clientY - rect.top;
 });
 
-// Envia o input atual para o servidor
 function sendInput() {
     if (ws && ws.readyState === WebSocket.OPEN) {
-        // A mira precisa ser convertida de coordenada da tela para coordenada do mundo!
         input.aimX = mouseX + camX;
         input.aimY = mouseY + camY;
         ws.send(JSON.stringify({ type: 'input', ...input }));
