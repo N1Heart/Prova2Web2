@@ -2,6 +2,7 @@ const http = require('http');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 // --- IMPORTAÇÕES DO JOGO ---
 const { TICK_RATE } = require('./src/constants');
@@ -16,6 +17,19 @@ const MAGIC_STRING = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 const gameState = createGameState();
 const clients = new Map(); // Mapeia o 'socket' para o 'playerId'
 let nextPlayerId = 1;
+
+function ipPlacaRede() {
+    const nets = os.networkInterfaces();
+    for (const nome of Object.keys(nets)) {
+        for (const net of nets[nome] ?? []) {
+            const ipv4 = net.family === "IPv4" || net.family === 4;
+            if (ipv4 && !net.internal) {
+                return net.address;
+            }
+        }
+    }
+    return "127.0.0.1";
+}
 
 // --- FUNÇÕES DE FRAME WEBSOCKET ---
 function parseFrame(buffer) {
@@ -238,8 +252,7 @@ server.on('upgrade', (req, socket) => {
     socket.on('close', handleDisconnect);
 });
 
-
-
+const host = ipPlacaRede();
 server.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}. Aguardando conexões...`);
-});
+    console.log(`Combat rodando em : ${host}:${PORT}`);
+})
